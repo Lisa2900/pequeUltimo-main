@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { IonButton, IonModal, IonContent, IonHeader, IonToolbar, IonTitle, IonList, IonItem, IonLabel } from '@ionic/react';
+import { IonButton, IonModal, IonContent, IonHeader, IonToolbar, IonTitle, IonList, IonItem, IonLabel, IonSelect, IonSelectOption } from '@ionic/react';
 import { doc, updateDoc, Timestamp, setDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
 import ConfirmModal from './ConfirmModal';
@@ -42,26 +42,29 @@ const RepairModal: React.FC<RepairModalProps> = ({ isOpen, onClose, repair, upda
   const [isUpdating, setIsUpdating] = useState<boolean>(false);
   const [showConfirmModal, setShowConfirmModal] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedStatus, setSelectedStatus] = useState<string>(repair?.status || 'Pendiente');
 
   const handleStatusChange = async () => {
     if (!repair) return;
     setIsUpdating(true);
     setError(null);
     try {
-      await updateRepairStatus(repair.id, 'Entregado');
-      // Preparar y registrar la venta
-      const saleData = {
-        cantidad: 1,
-        codigo: repair.folio || repair.id, // Usar folio si está disponible, de lo contrario, usar id de reparación
-        precio: repair.finalCost || 0,
-        producto: `Reparación: ${repair.brand} ${repair.model}`, // Generar nombre del producto
-        timestamp: Timestamp.now(),
-        total: repair.totalCost || 0,
-      };
-      await setDoc(doc(db, 'ventas', repair.id), saleData);
+      await updateRepairStatus(repair.id, selectedStatus);
+      if (selectedStatus === 'Entregado') {
+        // Preparar y registrar la venta
+        const saleData = {
+          cantidad: 1,
+          codigo: repair.folio || repair.id, // Usar folio si está disponible, de lo contrario, usar id de reparación
+          precio: repair.finalCost || 0,
+          producto: `Reparación: ${repair.brand} ${repair.model}`, // Generar nombre del producto
+          timestamp: Timestamp.now(),
+          total: repair.totalCost || 0,
+        };
+        await setDoc(doc(db, 'ventas', repair.id), saleData);
+      }
     } catch (error) {
-      setError('Error al cambiar el estado de la reparacion.');
-      console.error('Error al cambiar el estado de la reparacion:', error);
+      setError('Error al cambiar el estado de la reparación.');
+      console.error('Error al cambiar el estado de la reparación:', error);
     } finally {
       setIsUpdating(false);
     }
@@ -95,10 +98,15 @@ const RepairModal: React.FC<RepairModalProps> = ({ isOpen, onClose, repair, upda
         <IonContent>
           <IonList>
             <IonItem>
-              <IonLabel>Estado de la reparacion:</IonLabel>
-              <IonLabel color={repair.status === 'Pendiente' ? 'primary' : 'success'}>
-                {repair.status}
-              </IonLabel>
+              <IonLabel>Estado de la reparación:</IonLabel>
+              <IonSelect
+                value={selectedStatus}
+                onIonChange={e => setSelectedStatus(e.detail.value)}
+              >
+                <IonSelectOption value="pendiente">Pendiente</IonSelectOption>
+                <IonSelectOption value="reparacion">Reparación</IonSelectOption>
+                <IonSelectOption value="entregado">Entregado</IonSelectOption>
+              </IonSelect>
             </IonItem>
             <IonItem>
               <IonLabel>Descripción:</IonLabel>
@@ -125,7 +133,7 @@ const RepairModal: React.FC<RepairModalProps> = ({ isOpen, onClose, repair, upda
               <IonLabel>{repair.customerName}</IonLabel>
             </IonItem>
             <IonItem>
-              <IonLabel>Telefono:</IonLabel>
+              <IonLabel>Teléfono:</IonLabel>
               <IonLabel>{repair.contactNumber}</IonLabel>
             </IonItem>
             {repair.deliveryDate && (
@@ -156,14 +164,15 @@ const RepairModal: React.FC<RepairModalProps> = ({ isOpen, onClose, repair, upda
             </IonItem>
           </IonList>
           {error && <IonLabel color="danger">{error}</IonLabel>}
+          
           <IonButton
             expand="full"
             onClick={() => setShowConfirmModal(true)}
-            disabled={isUpdating || repair.status === 'Entregado'}
+            disabled={isUpdating || selectedStatus === 'Entregado'}
           >
-            {isUpdating ? 'Actualizando...' : 'Cambiar estado a entregado'}
+            {isUpdating ? 'Actualizando...' : 'Cambiar estado'}
           </IonButton>
-          
+
           <IonButton expand="full" onClick={onClose}>
             Cerrar
           </IonButton>

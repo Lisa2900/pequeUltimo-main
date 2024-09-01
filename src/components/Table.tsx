@@ -97,6 +97,13 @@ const ImageModal: React.FC<{ isOpen: boolean; imageURL: string | null; onClose: 
   </IonModal>
 );
 
+const handleDownloadImage = (url: string) => {
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "imagen.png";
+  link.click();
+};
+
 const Table: React.FC = () => {
   const [estadoFrom, setEstadoFrom] = useState<boolean>(false);
   const [openForm, setOpenForm] = useState<boolean>(false);
@@ -133,13 +140,6 @@ const Table: React.FC = () => {
     generatePDF(inventario);
   };
 
-  const handleDownloadImage = (url: string) => {
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "imagen.png";
-    link.click();
-  };
-
   return (
     <IonContent>
       {loading ? (
@@ -168,50 +168,49 @@ const Table: React.FC = () => {
           </div>
 
           <div className="overflow-x-auto">
-  <div className="min-w-full">
-    <IonList id="table-to-export" className="divide-y divide-gray-200">
-      <IonItem className="bg-gray-100 flex flex-nowrap">
-        <IonLabel className="w-1/6 text-center font-medium p-2">Código</IonLabel>
-        <IonLabel className="w-1/6 text-center font-medium p-2">Nombre</IonLabel>
-        <IonLabel className="w-1/6 text-center font-medium p-2">Cantidad</IonLabel>
-        <IonLabel className="w-1/6 text-center font-medium p-2">Precio</IonLabel>
-        <IonLabel className="w-1/6 text-center font-medium p-2">Acciones</IonLabel>
-      </IonItem>
+            <div className="min-w-full">
+              <IonList id="table-to-export" className="divide-y divide-gray-200">
+                <IonItem className="bg-gray-100 flex flex-nowrap">
+                  <IonLabel className="w-1/6 text-center font-medium p-2">Código</IonLabel>
+                  <IonLabel className="w-1/6 text-center font-medium p-2">Nombre</IonLabel>
+                  <IonLabel className="w-1/6 text-center font-medium p-2">Cantidad</IonLabel>
+                  <IonLabel className="w-1/6 text-center font-medium p-2">Precio</IonLabel>
+                  <IonLabel className="w-1/6 text-center font-medium p-2">Acciones</IonLabel>
+                </IonItem>
 
-      {inventario.map(item => (
-        <IonItem key={item.codigo} className="flex flex-nowrap items-center">
-          <IonLabel className="w-1/6 text-center p-2">{item.codigo}</IonLabel>
-          <IonLabel className="w-1/6 text-center p-2">{item.nombre}</IonLabel>
-          <IonLabel className="w-1/6 text-center p-2">{item.cantidad}</IonLabel>
-          <IonLabel className="w-1/6 text-center p-2">{item.precio}</IonLabel>
-          <div className="w-1/6 flex justify-center items-center space-x-2 p-2">
-            <IonButton aria-label="Editar producto" fill="clear" className="p-0 m-0" onClick={() => { setSelectedItem(item); setOpenForm(true); }}>
-              <IonIcon icon={pencil} className="icon-edit text-lg" />
-            </IonButton>
-            <IonButton
-              aria-label="Ver imagen del producto"
-              fill="clear"
-              className="p-0 m-0"
-              onClick={() => setShowProductImageModal({ open: true, imageURL: item.imagenURL })}
-            >
-              <IonIcon icon={eye} className="text-lg" />
-            </IonButton>
-            <IonButton
-              aria-label="Ver código de barras"
-              fill="clear"
-              className="p-0 m-0"
-              onClick={() => setShowBarcodeImageModal({ open: true, barcodeURL: item.barcodeURL })}
-            >
-              <IonIcon icon={barcode} className="text-lg" />
-            </IonButton>
-            <DeleteButton itemId={item.id} onDeleteSuccess={fetchData} />
+                {inventario.map(item => (
+                  <IonItem key={item.codigo} className="flex flex-nowrap items-center">
+                    <IonLabel className="w-1/6 text-center p-2">{item.codigo}</IonLabel>
+                    <IonLabel className="w-1/6 text-center p-2">{item.nombre}</IonLabel>
+                    <IonLabel className="w-1/6 text-center p-2">{item.cantidad}</IonLabel>
+                    <IonLabel className="w-1/6 text-center p-2">{item.precio}</IonLabel>
+                    <div className="w-1/6 flex justify-center items-center space-x-2 p-2">
+                      <IonButton aria-label="Editar producto" fill="clear" className="p-0 m-0" onClick={() => { setSelectedItem(item); setOpenForm(true); }}>
+                        <IonIcon icon={pencil} className="icon-edit text-lg" />
+                      </IonButton>
+                      <IonButton
+                        aria-label="Ver imagen del producto"
+                        fill="clear"
+                        className="p-0 m-0"
+                        onClick={() => setShowProductImageModal({ open: true, imageURL: item.imagenURL })}
+                      >
+                        <IonIcon icon={eye} className="text-lg" />
+                      </IonButton>
+                      <IonButton
+                        aria-label="Ver código de barras"
+                        fill="clear"
+                        className="p-0 m-0"
+                        onClick={() => setShowBarcodeImageModal({ open: true, barcodeURL: item.barcodeURL })}
+                      >
+                        <IonIcon icon={barcode} className="text-lg" />
+                      </IonButton>
+                      <DeleteButton itemId={item.id} onDeleteSuccess={fetchData} />
+                    </div>
+                  </IonItem>
+                ))}
+              </IonList>
+            </div>
           </div>
-        </IonItem>
-      ))}
-    </IonList>
-  </div>
-</div>
-
         </div>
       )}
 
@@ -245,7 +244,3 @@ const Table: React.FC = () => {
 };
 
 export default Table;
-function handleDownloadImage(imageURL: string): void {
-  throw new Error("Function not implemented.");
-}
-
